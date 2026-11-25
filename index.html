@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monish ST | Image Processing Dashboard</title>
+<style>
+:root{
+ --bg:#f4f6ff;--surface:#fff;--surface2:#f0f3ff;--ink:#17213b;--muted:#68738f;--line:#e0e5f3;
+ --nav:#17213b;--nav2:#202e52;--primary:#6657e8;--primary2:#887bff;--cyan:#13b8c8;--pink:#f16ca8;--orange:#ff9b50;--green:#19a987;
+ --shadow:0 12px 35px rgba(37,49,94,.09);--radius:18px
+}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,Segoe UI,Arial,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer;border:0}
+.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+.sidebar{background:linear-gradient(180deg,var(--nav),#10182c);color:#fff;padding:25px 16px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 10px 28px}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#7b6dff,#13c5c9);display:grid;place-items:center;font-size:22px;box-shadow:0 7px 18px #6154e766}
+.brand b{font-size:18px;letter-spacing:.2px}.brand small{display:block;color:#aeb9dc;font-size:11px}
+.navlabel{font-size:10px;letter-spacing:1.8px;color:#8794ba;font-weight:800;padding:15px 12px 8px;text-transform:uppercase}
+.navbtn{width:100%;display:flex;align-items:center;gap:12px;text-align:left;color:#c7d0ed;background:transparent;padding:12px;border-radius:12px;margin:3px 0;font-weight:650;transition:.2s}
+.navbtn .ico{width:23px;text-align:center;font-size:17px}.navbtn:hover,.navbtn.active{background:linear-gradient(100deg,#6558df55,#16b9c533);color:#fff}
+.sidebar-foot{margin-top:35px;padding:14px;border:1px solid #ffffff20;border-radius:14px;background:#ffffff0c;color:#aeb9dc;font-size:12px}
+.main{min-width:0}.topbar{height:76px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:5}
+.top-title{font-weight:800;font-size:18px}.top-sub{color:var(--muted);font-size:12px}.top-right{display:flex;align-items:center;gap:12px}.status{padding:7px 11px;border-radius:30px;background:#e7fbf5;color:#0c9273;font-size:11px;font-weight:800}
+.avatar{min-width:37px;height:37px;padding:0 9px;border-radius:12px;background:linear-gradient(135deg,#ffb66b,#f16ca8);display:grid;place-items:center;color:#fff;font-weight:900}
+.avatar-name{font-size:10px;white-space:nowrap;letter-spacing:.2px}
+.dash-chevron{margin-left:auto;font-size:12px;transition:transform .2s}
+.dashboard-projects{display:none;margin:0 0 7px 35px;padding-left:10px;border-left:1px solid #ffffff35}
+.dashboard-projects.open{display:grid;gap:3px}
+.project-link{width:100%;text-align:left;background:transparent;color:#aeb9dc;padding:9px 8px;border-radius:9px;font-size:11px;line-height:1.4}
+.project-link:hover{background:#ffffff18;color:#fff}
+.dashboard-projects.open + .navbtn{margin-top:0}
+.content{padding:28px 32px 55px;max-width:1500px;margin:auto}.page{display:none}.page.active{display:block}
+.welcome{border-radius:24px;padding:30px 32px;background:linear-gradient(115deg,#5e54db,#8074f2 55%,#17b9c7);color:white;display:flex;align-items:center;justify-content:space-between;gap:20px;overflow:hidden;position:relative;box-shadow:var(--shadow)}
+.welcome:after{content:"";position:absolute;width:260px;height:260px;border:35px solid #ffffff18;border-radius:50%;right:9%;top:-130px}
+.welcome h1{font-size:clamp(25px,3vw,36px);line-height:1.12;margin:5px 0 10px}.welcome p{color:#eeedff;max-width:650px;margin:0}.eyebrow{font-size:11px;letter-spacing:1.8px;font-weight:850;text-transform:uppercase;opacity:.8}
+.welcome .pill{background:#ffffff25;border:1px solid #ffffff55;border-radius:14px;padding:14px 18px;white-space:nowrap;font-weight:800;z-index:1}
+.grid{display:grid;gap:17px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin:20px 0}.stat{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:var(--shadow)}
+.stat .sicon{width:37px;height:37px;border-radius:12px;display:grid;place-items:center;font-size:18px;margin-bottom:10px}.stat strong{font-size:24px;display:block}.stat span{color:var(--muted);font-size:12px}
+.two{grid-template-columns:1.25fr .75fr}.three{grid-template-columns:repeat(3,1fr)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:21px;box-shadow:var(--shadow);min-width:0}
+.cardhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}.card h2{font-size:17px;margin:0}.card h3{font-size:14px;margin:0 0 8px}
+.muted{color:var(--muted)}.small{font-size:12px}.module{display:flex;align-items:flex-start;gap:15px;padding:17px;border:1px solid var(--line);border-radius:16px;background:var(--surface);cursor:pointer;transition:.2s}
+.module:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:#aaa1ff}.module-icon{width:48px;height:48px;flex:none;border-radius:15px;display:grid;place-items:center;font-size:23px}.module h3{margin:0 0 4px}.module p{margin:0;color:var(--muted);font-size:12px}.arrow{margin-left:auto;color:var(--primary);font-size:20px}
+.btn{padding:10px 15px;border-radius:11px;background:var(--primary);color:white;font-weight:750;box-shadow:0 6px 14px #6657e833}.btn:hover{filter:brightness(1.06);transform:translateY(-1px)}.btn.secondary{background:#edf0ff;color:#5146c7;box-shadow:none}.btn.cyan{background:var(--cyan)}.btn.orange{background:var(--orange);color:#38200a}.btn.ghost{background:var(--surface2);color:var(--ink);box-shadow:none;border:1px solid var(--line)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.field{display:flex;flex-direction:column;gap:6px;min-width:130px;flex:1}.field label{font-size:12px;color:var(--muted);font-weight:750}
+input[type=file],select,input[type=number],input[type=text]{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--primary)}.rangeval{font-weight:800;color:var(--primary)}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}.tab{background:var(--surface2);color:var(--muted);border-radius:10px;padding:8px 13px;font-size:12px;font-weight:800}.tab.active{background:var(--primary);color:white}
+.imggrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.imgbox{border:1px solid var(--line);border-radius:13px;padding:10px;min-width:0;background:#fbfcff}.imgbox h4{font-size:12px;margin:0 0 8px;display:flex;justify-content:space-between}.imgbox canvas{width:100%;height:auto;max-height:260px;object-fit:contain;background:#e9edf7;border-radius:8px;display:block;min-height:110px}.empty{height:150px;border:1px dashed #cbd2e6;border-radius:9px;display:grid;place-items:center;text-align:center;color:#8993ad;font-size:12px;padding:10px}
+.metricgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric{background:var(--surface2);padding:13px;border-radius:12px}.metric span{font-size:11px;color:var(--muted);display:block}.metric b{font-size:19px;color:var(--primary)}
+.chartwrap{height:190px;background:#fbfcff;border:1px solid var(--line);border-radius:12px;padding:8px}.chartwrap canvas{width:100%;height:100%}
+.note{background:#f0efff;border-left:3px solid var(--primary);border-radius:0 10px 10px 0;padding:11px 13px;color:#514b80;font-size:12px}
+.checkline{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}.checkline input{accent-color:var(--primary)}
+.settingrow{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:15px 0;border-bottom:1px solid var(--line)}.settingrow:last-child{border:0}
+footer{padding:20px;text-align:center;color:#8a94ac;font-size:11px}
+
+.profile-menu-wrap{position:relative}
+.profile-trigger{display:flex;align-items:center;gap:9px;background:var(--surface2);color:var(--ink);padding:6px 9px;border-radius:12px;font-weight:800;border:1px solid var(--line)}
+.profile-trigger:hover{background:var(--surface2)}
+.profile-name{font-size:13px}
+.profile-chevron{font-size:12px;color:var(--muted)}
+.profile-dropdown{display:none;position:absolute;right:0;top:calc(100% + 10px);width:175px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:7px;box-shadow:var(--shadow);z-index:20}
+.profile-dropdown.open{display:block}
+.profile-dropdown button{width:100%;text-align:left;background:transparent;color:var(--ink);padding:11px;border-radius:9px;font-weight:700}
+.profile-dropdown button:hover{background:var(--surface2)}
+.hero-action{display:inline-block;margin-top:18px;background:#fff;color:#5146c7;box-shadow:none}
+.hero-action:hover{background:#f1efff}
+.welcome p{line-height:1.7}
+@media(max-width:720px){.profile-name{display:none}.profile-trigger{gap:4px}}
+
+@media(max-width:1050px){.app{grid-template-columns:215px 1fr}.stats{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.imggrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.app{display:block}.sidebar{height:auto;position:relative;padding:12px}.brand{padding:3px 8px 10px}.navlabel,.sidebar-foot{display:none}.navgroup{display:flex;overflow:auto;gap:5px}.navbtn{width:auto;white-space:nowrap;padding:9px}.dashboard-projects{position:absolute;z-index:15;margin:0;background:var(--nav2);border-radius:10px;padding:8px;border:1px solid #ffffff25;box-shadow:var(--shadow);max-width:260px}.dashboard-projects.open{display:grid}.project-link{white-space:normal}.topbar{padding:0 16px;height:64px}.content{padding:18px 14px 40px}.welcome{padding:22px;display:block}.welcome .pill{display:inline-block;margin-top:16px}.stats{gap:10px}.stat{padding:13px}.imggrid{grid-template-columns:1fr}.three{grid-template-columns:1fr}}
+</style></head>
+<body>
+<div class="app">
+<aside class="sidebar">
+ <div class="brand"><div class="logo">D</div><div><b>DIGITAL</b><small>IMAGE PROCESSING LAB</small></div></div>
+ <div class="navlabel">Workspace</div>
+ <div class="navgroup">
+  <button class="navbtn active" data-page="dashboard" id="dashboardToggle" aria-expanded="false"><span class="ico">▦</span>Dashboard <span class="dash-chevron" id="dashChevron">▾</span></button>
+  <div class="dashboard-projects" id="dashboardProjects" aria-hidden="true">
+   <button type="button" class="project-link" data-project="salt">◈ &nbsp; Salt-and-Pepper Noise Removal</button>
+   <button type="button" class="project-link" data-project="morph">⬡ &nbsp; Region Filling & Morphological Closing</button>
+   <button type="button" class="project-link" data-project="lane">🚗 &nbsp; Detection of Road Lane Markings</button>
+   <button type="button" class="project-link" data-project="digits">🔢 &nbsp; Handwritten Digit Recognition</button>
+  </div>
+  <button class="navbtn" data-page="settings" id="settingsNav"><span class="ico">⚙</span>Settings</button>
+ </div>
+ <div class="sidebar-foot"><b>Project workspace</b><br>Four practical image-processing modules in one place, powered by your Flask backend.</div>
+</aside>
+<div class="main">
+ <header class="topbar"><div><div class="top-title" id="topTitle">Dashboard</div><div class="top-sub">Image Processing • Interactive project lab</div></div><div class="top-right">
+    <div class="profile-menu-wrap">
+      <button class="profile-trigger" id="profileTrigger" aria-haspopup="true" aria-expanded="false">
+        <span class="avatar avatar-name">MONISH ST</span><span class="profile-chevron">▾</span>
+      </button>
+      <div class="profile-dropdown" id="profileDropdown">
+        <button type="button" id="profileSettings">⚙ &nbsp; Settings</button>
+      </div>
+    </div>
+  </div></header>
+ <main class="content">
+ <section class="page active" id="dashboard">
+  <div class="welcome"><div><div class="eyebrow">Welcome to your workspace</div><h1>Explore. Process. Compare.</h1><p>Clean images by reducing unwanted noise and restoring important details.<br>Explore morphological region filling, compare results and measure image quality in one workspace.</p><button class="btn hero-action" id="startProcessing">Start Processing&nbsp; →</button></div><div class="pill">4 IMAGE PROCESSING MODULES&nbsp; ✦</div></div>
+  <div class="grid stats">
+   <div class="stat"><div class="sicon" style="background:#eeecff;color:#6657e8">◈</div><strong>04</strong><span>Image processing modules</span></div>
+   <div class="stat"><div class="sicon" style="background:#e2fbfa;color:#0799a7">▧</div><strong>05+</strong><span>Built-in test images</span></div>
+   <div class="stat"><div class="sicon" style="background:#fff0e4;color:#ed8737">∿</div><strong>03</strong><span>Filter window sizes</span></div>
+   <div class="stat"><div class="sicon" style="background:#ffeaf3;color:#dc5796">◎</div><strong>03</strong><span>Quality metrics</span></div>
+  </div>
+  <div class="grid two">
+   <div class="card"><div class="cardhead"><h2>Project modules</h2><span class="small muted">Select a workspace</span></div>
+    <div class="grid">
+     <div class="module" onclick="go('salt')"><div class="module-icon" style="background:#eeecff;color:#6657e8">◈</div><div><h3>Salt-and-Pepper Noise Removal</h3><p>Median filter, Mean filter, 5 test images, histograms, MSE, PSNR and SSIM.</p></div><span class="arrow">→</span></div>
+     <div class="module" onclick="go('morph')"><div class="module-icon" style="background:#e1fbf8;color:#079e9b">⬡</div><div><h3>Region Filling & Morphological Closing</h3><p>Fill internal holes in segmented objects, compare closing and count added pixels.</p></div><span class="arrow">→</span></div>
+     <div class="module" onclick="go('lane')"><div class="module-icon" style="background:#fff0e4;color:#ed8737">🚗</div><div><h3>Detection of Road Lane Markings</h3><p>Apply horizontal, vertical and diagonal directional masks to detect and highlight line structures.</p></div><span class="arrow">→</span></div>
+      <div class="module" onclick="go('digits')"><div class="module-icon" style="background:#e5f4ff;color:#1683bd">🔢</div><div><h3>Handwritten Digit Recognition</h3><p>Recognize digits 0–9 and compare boundary, regional, shape and moment descriptors.</p></div><span class="arrow">→</span></div>
+    </div>
+   </div>
+   <div class="card"><div class="cardhead"><h2>Project checklist</h2><span class="small muted">Included features</span></div>
+    <div class="checkline">✓ &nbsp; Upload your own images</div><br><div class="checkline">✓ &nbsp; Five generated sample images</div><br><div class="checkline">✓ &nbsp; Original / processed comparison</div><br><div class="checkline">✓ &nbsp; Histogram visualization</div><br><div class="checkline">✓ &nbsp; Parameter experiments</div><br><div class="checkline">✓ &nbsp; Quality metrics and analysis</div><br><div class="checkline">✓ &nbsp; Region filling and closing</div><br><div class="checkline">✓ &nbsp; Road lane directional line detection</div>
+   </div>
+  </div>
+ </section>
+
+ <section class="page" id="salt">
+  <div class="card">
+   <div class="cardhead"><div><div class="eyebrow" style="color:var(--primary)">MODULE 01</div><h2>Salt-and-Pepper Noise Removal</h2><div class="muted small">Compare Median and Mean filters and analyze image quality.</div></div><span class="status">Noise lab</span></div>
+   <div class="row">
+    <div class="field"><label>Choose a test image</label><select id="sampleSelect"><option value="shapes">Geometric shapes</option><option value="gradient">Smooth gradient</option><option value="checker">Checkerboard</option><option value="landscape">Color landscape</option><option value="text">Text-like pattern</option></select></div>
+    <div class="field"><label>Or upload your own image</label><input id="saltUpload" type="file" accept="image/*"></div>
+    <div class="field"><label>Noise density <b class="rangeval" id="noiseVal">8%</b></label><input id="noiseAmount" type="range" min="1" max="40" value="8"></div>
+   </div>
+   <div class="row" style="margin-top:13px">
+    <div class="field"><label>Filter window size</label><select id="kernel"><option value="3">3 × 3</option><option value="5">5 × 5</option><option value="7">7 × 7</option></select></div>
+    <label class="checkline"><input type="checkbox" id="autoCompare" checked> Compare both filters</label>
+    <button class="btn" id="generateSalt">Generate noisy image</button>
+    <button class="btn ghost" id="resetSalt">Reset</button>
+   </div>
+  </div>
+  <div class="card" style="margin-top:17px">
+   <div class="cardhead"><h2>Image comparison</h2><span class="small muted" id="saltDimensions">640 × 420 sample</span></div>
+   <div class="imggrid">
+    <div class="imgbox"><h4>Original <span style="color:var(--green)">REFERENCE</span></h4><div id="saltOriginal" class="empty">Original test image</div></div>
+    <div class="imgbox"><h4>Noisy <span style="color:var(--pink)">INPUT</span></h4><div id="saltNoisy" class="empty">Generate noise first</div></div>
+    <div class="imgbox"><h4>Median Filter <span style="color:var(--primary)">OUTPUT A</span></h4><div id="saltMedian" class="empty">Median result</div></div>
+    <div class="imgbox"><h4>Mean Filter <span style="color:var(--orange)">OUTPUT B</span></h4><div id="saltMean" class="empty">Mean result</div></div>
+    <div class="imgbox"><h4>Selected output <span style="color:var(--cyan)">PREVIEW</span></h4><div id="saltBest" class="empty">Best result preview</div></div>
+    <div class="imgbox"><h4>Histogram <span style="color:var(--primary)">DISTRIBUTION</span></h4><div class="chartwrap"><canvas id="histSalt"></canvas></div></div>
+   </div>
+   <div class="row" style="margin-top:14px">
+    <button class="btn" id="medianRun">Apply Median Filter</button><button class="btn orange" id="meanRun">Apply Mean Filter</button><button class="btn cyan" id="bothRun">Run comparison</button><button class="btn secondary" id="downloadSalt">Download results CSV</button>
+   </div>
+  </div>
+  <div class="grid two" style="margin-top:17px">
+   <div class="card"><div class="cardhead"><h2>Quantitative quality analysis</h2><span class="small muted">Compared with original</span></div>
+    <div class="metricgrid">
+     <div class="metric"><span>Noisy MSE</span><b id="nMse">—</b></div><div class="metric"><span>Noisy PSNR</span><b id="nPsnr">—</b></div><div class="metric"><span>Noisy SSIM*</span><b id="nSsim">—</b></div>
+     <div class="metric"><span>Median MSE</span><b id="mMse">—</b></div><div class="metric"><span>Median PSNR</span><b id="mPsnr">—</b></div><div class="metric"><span>Median SSIM*</span><b id="mSsim">—</b></div>
+     <div class="metric"><span>Mean MSE</span><b id="aMse">—</b></div><div class="metric"><span>Mean PSNR</span><b id="aPsnr">—</b></div><div class="metric"><span>Mean SSIM*</span><b id="aSsim">—</b></div>
+    </div><p class="muted small" style="margin-bottom:0">*SSIM is a simplified global luminance/contrast/structure approximation for this browser demo. MSE and PSNR are calculated from RGB pixel values.</p>
+   </div>
+   <div class="card"><div class="cardhead"><h2>Automatic observations</h2><span class="status">Live analysis</span></div><p id="saltAnalysis" class="note">Select a test image, generate noise and run the filters to receive a comparison.</p><div class="chartwrap" style="margin-top:12px"><canvas id="metricChart"></canvas></div></div>
+  </div>
+  <div class="card" style="margin-top:17px"><h2>Experiment guide</h2><p class="muted small">Repeat the experiment with all five test images. Change noise density and window size (3×3, 5×5, 7×7), then compare the original, noisy and enhanced images, histograms, MSE, PSNR and SSIM. Record whether smoothing removed noise or blurred useful edges.</p><div class="row"><span class="status">5 built-in images</span><span class="status">3 filter sizes</span><span class="status">3 quality metrics</span></div></div>
+ </section>
+
+ <section class="page" id="morph">
+  <div class="card">
+   <div class="cardhead"><div><div class="eyebrow" style="color:var(--cyan)">MODULE 02</div><h2>Region Filling & Morphological Closing</h2><div class="muted small">Identify and fill unwanted holes inside binary segmented objects.</div></div><span class="status">Morphology lab</span></div>
+   <div class="row">
+    <div class="field"><label>Choose sample binary image</label><select id="morphSample"><option value="ring">Ring / donut with hole</option><option value="two">Two objects with holes</option><option value="bubble">Bubble-like object</option></select></div>
+    <div class="field"><label>Or upload an image</label><input id="morphUpload" type="file" accept="image/*"></div>
+    <div class="field"><label>Threshold <b class="rangeval" id="thresholdVal">128</b></label><input id="threshold" type="range" min="1" max="254" value="128"></div>
+    <div class="field"><label>Closing kernel</label><select id="closeKernel"><option value="3">3 × 3</option><option value="5">5 × 5</option><option value="7">7 × 7</option></select></div>
+   </div>
+   <div class="row" style="margin-top:13px"><button class="btn cyan" id="loadMorph">Load sample</button><button class="btn" id="fillHoles">Fill internal holes</button><button class="btn orange" id="closingRun">Apply morphological closing</button><button class="btn ghost" id="resetMorph">Reset</button></div>
+   <p class="muted small">Uploaded color images are converted to binary using the selected grayscale threshold. For best results, use a dark background and bright foreground object.</p>
+  </div>
+  <div class="card" style="margin-top:17px"><div class="cardhead"><h2>Binary image results</h2><span class="small muted" id="morphDimensions">Sample image</span></div>
+   <div class="imggrid">
+    <div class="imgbox"><h4>Original / Binary input</h4><div id="morphOriginal" class="empty">Load a binary sample</div></div>
+    <div class="imgbox"><h4>Region-filled output</h4><div id="morphFilled" class="empty">Fill internal holes</div></div>
+    <div class="imgbox"><h4>Morphological closing</h4><div id="morphClosed" class="empty">Apply closing</div></div>
+   </div>
+   <div class="metricgrid" style="margin-top:14px">
+    <div class="metric"><span>Original foreground pixels</span><b id="fgCount">—</b></div><div class="metric"><span>Pixels added by filling</span><b id="filledCount">—</b></div><div class="metric"><span>Pixels added by closing</span><b id="closedCount">—</b></div>
+   </div>
+   <p id="morphAnalysis" class="note" style="margin-top:14px">Load a sample, then compare region filling and closing. The filled pixel count is the number of background pixels converted to foreground.</p>
+  </div>
+  <div class="card" style="margin-top:17px"><h2>How the methods work</h2><div class="grid two" style="margin-top:12px"><div><h3>Region filling</h3><p class="muted small">A flood-fill operation starts from background pixels on the image border. The unvisited background regions are enclosed holes. Those regions are changed to foreground, while the outside background stays unchanged.</p></div><div><h3>Morphological closing</h3><p class="muted small">Closing is dilation followed by erosion using a structuring element. It can close small gaps and narrow openings, but it may not fill large enclosed holes. Compare its output with region filling.</p></div></div></div>
+ </section>
+
+ <section class="page" id="lane">
+  <div class="card">
+   <div class="cardhead"><div><div class="eyebrow" style="color:var(--orange)">MODULE 03</div><h2>Detection of Road Lane Markings</h2><div class="muted small">Directional line detection using horizontal, vertical and diagonal masks.</div></div><span class="status">Line detection lab</span></div>
+   <div class="row">
+    <div class="field"><label>Upload road image</label><input type="file" id="laneUpload" accept="image/*"></div>
+    <div class="field"><label>Selected image</label><span class="muted small" id="laneFileName">No image selected</span></div>
+    <button class="btn" id="laneProcess" disabled>Detect lane markings</button>
+    <button class="btn ghost" id="laneReset">Reset</button>
+   </div>
+   <p class="muted small" style="margin-top:12px">The system converts the image to grayscale, applies four directional line masks, compares their responses and overlays detected structures in red.</p>
+   <p id="laneStatus" class="note">Upload a road image to begin.</p>
+  </div>
+  <div class="card" style="margin-top:17px"><div class="cardhead"><h2>Directional detection results</h2><span class="small muted">Compare mask responses</span></div>
+   <div class="imggrid">
+    <div class="imgbox"><h4>Original road image</h4><div id="laneOriginal" class="empty">Upload an image</div></div>
+    <div class="imgbox"><h4>Horizontal (0°)</h4><div id="laneHorizontal" class="empty">Waiting for processing</div></div>
+    <div class="imgbox"><h4>Vertical (90°)</h4><div id="laneVertical" class="empty">Waiting for processing</div></div>
+    <div class="imgbox"><h4>Diagonal (45°)</h4><div id="laneDiagonal45" class="empty">Waiting for processing</div></div>
+    <div class="imgbox"><h4>Diagonal (135°)</h4><div id="laneDiagonal135" class="empty">Waiting for processing</div></div>
+    <div class="imgbox"><h4>Combined response</h4><div id="laneCombined" class="empty">Waiting for processing</div></div>
+    <div class="imgbox"><h4>Final highlighted lane markings</h4><div id="laneOutput" class="empty">Detected segments will appear here</div></div>
+   </div>
+   <div class="row" style="margin-top:14px"><button class="btn secondary" id="laneDownload" disabled>Download highlighted result</button></div>
+  </div>
+  <div class="card" style="margin-top:17px"><h2>How line detection works</h2><div class="grid two" style="margin-top:12px"><div><h3>Directional masks</h3><p class="muted small">A small convolution mask responds strongly to line-like structures aligned with its orientation. Four masks are used to examine horizontal, vertical and both diagonal directions.</p></div><div><h3>Response comparison</h3><p class="muted small">The directional responses are thresholded and combined. The final output overlays detected line structures on the original road image. Other edges and road textures may also respond, so the result is a line-structure demonstration rather than a full autonomous lane tracker.</p></div></div></div>
+ </section>
+
+
+ <section class="page" id="digits">
+  <div class="card">
+   <div class="cardhead">
+    <div><div class="eyebrow" style="color:var(--purple,#7957d5)">MODULE 04</div><h2>Handwritten Digit Recognition</h2><div class="muted small">Upload one handwritten digit (0–9). The system preprocesses the image and compares three machine-learning classifiers.</div></div>
+    <span class="status">AI recognition lab</span>
+   </div>
+   <div class="row" style="align-items:end">
+    <div class="field" style="flex:1;min-width:220px"><label for="digitUpload">Upload digit image</label><input type="file" id="digitUpload" accept="image/png,image/jpeg,image/webp,image/bmp"></div>
+    <div class="field" style="min-width:180px"><label>Selected file</label><span class="muted small" id="digitFileName">No image selected</span></div>
+    <button class="btn" id="digitRun" disabled>Recognize digit</button>
+    <button class="btn ghost" id="digitReset">Reset</button>
+   </div>
+   <p class="muted small" style="margin-top:12px">For best results, use a clear, dark handwritten digit on a plain light background. Crop the image so it contains one digit only.</p>
+   <p class="note" id="digitStatus">Upload one clear handwritten digit (0–9) to begin.</p>
+  </div>
+
+  <div class="grid two" style="margin-top:17px">
+   <div class="card"><h2>Input image</h2><div class="imgbox" style="margin-top:12px"><div id="digitOriginal" class="empty">Upload an image</div></div></div>
+   <div class="card"><h2>Normalized 28 × 28 image</h2><div class="imgbox" style="margin-top:12px"><div id="digitNormalized" class="empty">Waiting for recognition</div></div><p class="muted small" style="margin-top:10px">The uploaded digit is converted to grayscale, thresholded, cropped, resized and centered before classification.</p></div>
+  </div>
+
+  <div class="card" style="margin-top:17px">
+   <div class="cardhead"><h2>Recognition result</h2><span class="small muted">Primary model: Support Vector Machine</span></div>
+   <div class="grid two" style="margin-top:12px">
+    <div class="metric"><span>Predicted digit</span><b id="digitPrediction">—</b></div>
+    <div class="metric"><span>Model confidence</span><b id="digitConfidence">—</b></div>
+   </div>
+   <h3 style="margin-top:18px">Classifier comparison</h3>
+   <div id="digitPredictions" class="muted small" style="margin-top:8px">Run recognition to compare SVM, Random Forest and KNN predictions.</div>
+  </div>
+
+  <div class="card" style="margin-top:17px">
+   <h2>Model evaluation</h2>
+   <p class="muted small" id="digitDatasetNote">Evaluation metrics will appear after the first recognition. They are calculated on a held-out test split of the scikit-learn Digits dataset.</p>
+   <div style="overflow-x:auto;margin-top:12px">
+    <table id="digitMetrics" style="width:100%;border-collapse:collapse;text-align:left">
+     <thead><tr><th style="padding:10px">Model</th><th style="padding:10px">Accuracy</th><th style="padding:10px">Precision</th><th style="padding:10px">Recall</th><th style="padding:10px">F1 score</th></tr></thead>
+     <tbody><tr><td colspan="5" class="muted" style="padding:10px">Metrics not loaded yet.</td></tr></tbody>
+    </table>
+   </div>
+  </div>
+
+  <div class="card" style="margin-top:17px">
+   <h2>Extracted image features</h2>
+   <p class="muted small">Pixel intensity and horizontal/vertical projection values used to describe the normalized digit.</p>
+   <div id="digitFeaturePreview" class="muted small" style="margin-top:10px">Feature values will appear here after recognition.</div>
+  </div>
+  <div class="card" style="margin-top:17px"><h2>About this model</h2><p class="muted small">This academic demonstration trains SVM, Random Forest and K-Nearest Neighbors classifiers using scikit-learn’s Optical Recognition of Handwritten Digits dataset. It is not an MNIST model, and predictions can vary with handwriting style, image quality and preprocessing.</p></div>
+ </section>
+
+ <section class="page" id="settings">
+  <div class="card"><div class="cardhead"><h2>Workspace settings</h2><span class="status">Preferences</span></div>
+   <div class="settingrow"><div><b>Color theme</b><div class="muted small">Choose the dashboard appearance.</div></div><select id="themeSelect" style="max-width:190px"><option value="light">Colorful light</option><option value="dark">Dark</option></select></div>
+   <div class="settingrow"><div><b>Default noise density</b><div class="muted small">Used when the noise removal module opens.</div></div><select id="defaultNoise" style="max-width:190px"><option value="5">5%</option><option value="8" selected>8%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option></select></div>
+   <div class="settingrow"><div><b>Default filter window</b><div class="muted small">Initial median and mean filter size.</div></div><select id="defaultKernel" style="max-width:190px"><option value="3">3 × 3</option><option value="5">5 × 5</option><option value="7">7 × 7</option></select></div>
+   <div class="settingrow"><div><b>Image processing privacy</b><div class="muted small">Images are processed locally in this browser.</div></div><span class="status">Local only</span></div>
+   <div class="row" style="margin-top:18px"><button class="btn" id="saveSettings">Save settings</button><button class="btn ghost" id="resetSettings">Restore defaults</button><span class="muted small" id="settingsStatus"></span></div>
+  </div>
+  <div class="card" style="margin-top:17px"><h2>About this project workspace</h2><p class="muted">DIGITAL Image Processing Lab by MONISH ST combines four image-processing projects in one workspace. The workspace opens directly without login or account management. Image-processing features are provided by the connected Flask backend.</p></div>
+ </section>
+ </main>
+ <footer></footer>
+</div></div>
+<script>
+const $=id=>document.getElementById(id);
+function go(page){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===page));document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));$('topTitle').textContent=({dashboard:'Dashboard',salt:'Noise Removal',morph:'Region Filling',lane:'Road Lane Detection',digits:'Handwritten Digit Recognition',settings:'Settings'})[page];window.scrollTo({top:0,behavior:'smooth'});}
+const dashboardToggle=$('dashboardToggle'),dashboardProjects=$('dashboardProjects'),dashChevron=$('dashChevron');
+dashboardToggle.onclick=()=>{const opened=dashboardProjects.classList.toggle('open');dashboardToggle.setAttribute('aria-expanded',String(opened));dashboardProjects.setAttribute('aria-hidden',String(!opened));dashChevron.textContent=opened?'▴':'▾';go('dashboard');};
+document.querySelectorAll('.navbtn:not(#dashboardToggle)').forEach(b=>b.onclick=()=>{dashboardProjects.classList.remove('open');dashboardToggle.setAttribute('aria-expanded','false');dashboardProjects.setAttribute('aria-hidden','true');dashChevron.textContent='▾';go(b.dataset.page);});
+document.querySelectorAll('.project-link').forEach(b=>b.onclick=()=>{dashboardProjects.classList.remove('open');dashboardToggle.setAttribute('aria-expanded','false');dashboardProjects.setAttribute('aria-hidden','true');dashChevron.textContent='▾';go(b.dataset.project);});
+// Profile menu: quick access to settings and a clear demo logout action.
+const profileTrigger=$('profileTrigger'),profileDropdown=$('profileDropdown');
+profileTrigger.onclick=()=>{const opened=profileDropdown.classList.toggle('open');profileTrigger.setAttribute('aria-expanded',String(opened));};
+document.addEventListener('click',e=>{if(!e.target.closest('.profile-menu-wrap')){profileDropdown.classList.remove('open');profileTrigger.setAttribute('aria-expanded','false');}});
+$('profileSettings').onclick=()=>{profileDropdown.classList.remove('open');profileTrigger.setAttribute('aria-expanded','false');go('settings');};
+$('startProcessing').onclick=()=>go('salt');
+
+let saltW=320,saltH=210,saltOriginal=null,saltNoisy=null,saltMedian=null,saltMean=null,morphW=320,morphH=210,morphBinary=null,morphFilled=null,morphClosed=null;
+function canvasData(w,h,data){let c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(data),w,h),0,0);return c}
+function draw(holder,data,w,h,binary=false){let el=$(holder);el.innerHTML='';el.className='';let c=canvasData(w,h,data);el.appendChild(c)}
+function empty(holder,msg){$(holder).innerHTML=msg;$(holder).className='empty'}
+function rgbData(w,h,fn){let a=new Uint8ClampedArray(w*h*4);for(let y=0;y<h;y++)for(let x=0;x<w;x++){let p=fn(x,y);let i=(y*w+x)*4;a[i]=p[0];a[i+1]=p[1];a[i+2]=p[2];a[i+3]=255;}return a}
+function makeSample(type){let w=saltW,h=saltH;return rgbData(w,h,(x,y)=>{let nx=x/w,ny=y/h;if(type==='gradient'){let v=Math.round(25+210*nx);return [v,Math.round(35+180*ny),Math.round(230-150*nx)]}
+ if(type==='checker'){let v=((Math.floor(x/22)+Math.floor(y/22))%2)?235:35;return [v,Math.min(255,v+8),Math.max(0,v-10)]}
+ if(type==='landscape'){let sky=ny<.55;let wave=.62+.07*Math.sin(nx*13)+.04*Math.sin(nx*27);if(sky)return [Math.round(65+ny*100),Math.round(145+ny*70),220];if(ny>wave)return [Math.round(30+40*nx),Math.round(105+45*Math.sin(nx*7)),Math.round(50+25*nx)];return [55,145,190]}
+ if(type==='text'){let band=(y%48<6)||(x%80<4);let bars=(x%140>20&&x%140<105&&y%48>13&&y%48<36&&((x+y)%19<11));let v=band||bars?30:245;return [v,v,v]}
+ let bg=[245,239,255];let inCircle=(x-90)**2+(y-100)**2<52**2;let inRect=x>175&&x<280&&y>48&&y<160;let stripe=(x+y)%35<9;if(inCircle)return stripe?[255,170,70]:[100,75,220];if(inRect)return [15,180,190];return bg;});}
+function loadSaltSample(){let t=$('sampleSelect').value;saltOriginal=makeSample(t);saltNoisy=saltMedian=saltMean=null;draw('saltOriginal',saltOriginal,saltW,saltH);empty('saltNoisy','Generate noise first');empty('saltMedian','Median result');empty('saltMean','Mean result');empty('saltBest','Best result preview');$('saltDimensions').textContent=`${saltW} × ${saltH}`;['nMse','nPsnr','nSsim','mMse','mPsnr','mSsim','aMse','aPsnr','aSsim'].forEach(id=>$(id).textContent='—');$('saltAnalysis').textContent='Sample loaded. Generate noise and run the filters.';drawHistogram('histSalt',saltOriginal,saltW,saltH);}
+$('sampleSelect').onchange=loadSaltSample;
+$('noiseAmount').oninput=()=> $('noiseVal').textContent=$('noiseAmount').value+'%';
+function addNoise(){if(!saltOriginal)loadSaltSample();saltNoisy=saltOriginal.slice();let p=+$('noiseAmount').value/100;for(let i=0;i<saltW*saltH;i++)if(Math.random()<p){let v=Math.random()<.5?0:255,j=i*4;saltNoisy[j]=saltNoisy[j+1]=saltNoisy[j+2]=v;}saltMedian=saltMean=null;draw('saltNoisy',saltNoisy,saltW,saltH);empty('saltMedian','Median result');empty('saltMean','Mean result');empty('saltBest','Best result preview');let m=measure(saltOriginal,saltNoisy,saltW,saltH);setMetric('n',m);['mMse','mPsnr','mSsim','aMse','aPsnr','aSsim'].forEach(id=>$(id).textContent='—');drawHistogram('histSalt',saltNoisy,saltW,saltH);$('saltAnalysis').textContent=`Salt-and-pepper noise added at ${$('noiseAmount').value}%. Compare the filtered results with the original.`;}
+$('generateSalt').onclick=addNoise;
+$('resetSalt').onclick=loadSaltSample;
+$('saltUpload').onchange=e=>{let f=e.target.files[0];if(!f)return;let im=new Image(),url=URL.createObjectURL(f);im.onload=()=>{let scale=Math.min(1,520/Math.max(im.width,im.height));saltW=Math.round(im.width*scale);saltH=Math.round(im.height*scale);let c=document.createElement('canvas');c.width=saltW;c.height=saltH;c.getContext('2d').drawImage(im,0,0,saltW,saltH);saltOriginal=c.getContext('2d').getImageData(0,0,saltW,saltH).data;saltNoisy=saltMedian=saltMean=null;draw('saltOriginal',saltOriginal,saltW,saltH);empty('saltNoisy','Generate noise first');empty('saltMedian','Median result');empty('saltMean','Mean result');empty('saltBest','Best result preview');$('saltDimensions').textContent=`${saltW} × ${saltH} uploaded`;drawHistogram('histSalt',saltOriginal,saltW,saltH);URL.revokeObjectURL(url);};im.src=url;};
+function filterImage(src,w,h,k,method){let out=src.slice(),r=k>>1,vals=[];for(let y=0;y<h;y++)for(let x=0;x<w;x++)for(let ch=0;ch<3;ch++){vals.length=0;let sum=0,n=0;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){let yy=Math.max(0,Math.min(h-1,y+dy)),xx=Math.max(0,Math.min(w-1,x+dx)),v=src[(yy*w+xx)*4+ch];vals.push(v);sum+=v;n++;}out[(y*w+x)*4+ch]=method==='median'?(vals.sort((a,b)=>a-b)[vals.length>>1]):Math.round(sum/n);}return out;}
+function measure(a,b,w,h){let mse=0,n=w*h*3,ma=0,mb=0;for(let i=0;i<w*h;i++)for(let c=0;c<3;c++){let x=a[i*4+c],y=b[i*4+c];mse+=(x-y)**2;ma+=x;mb+=y;}mse/=n;ma/=n;mb/=n;let va=0,vb=0,cov=0;for(let i=0;i<w*h;i++)for(let c=0;c<3;c++){let x=a[i*4+c]-ma,y=b[i*4+c]-mb;va+=x*x;vb+=y*y;cov+=x*y;}va/=n;vb/=n;cov/=n;let C1=6.5025,C2=58.5225,ssim=((2*ma*mb+C1)*(2*cov+C2))/((ma*ma+mb*mb+C1)*(va+vb+C2));return {mse,psnr:mse===0?99:10*Math.log10(65025/mse),ssim:Math.max(-1,Math.min(1,ssim))};}
+function setMetric(prefix,m){$(prefix+'Mse').textContent=m.mse.toFixed(1);$(prefix+'Psnr').textContent=m.psnr.toFixed(2)+' dB';$(prefix+'Ssim').textContent=m.ssim.toFixed(3);}
+function runSalt(which){if(!saltNoisy){addNoise();}let k=+$('kernel').value;if(which==='median'||which==='both'){saltMedian=filterImage(saltNoisy,saltW,saltH,k,'median');draw('saltMedian',saltMedian,saltW,saltH);setMetric('m',measure(saltOriginal,saltMedian,saltW,saltH));}
+ if(which==='mean'||which==='both'){saltMean=filterImage(saltNoisy,saltW,saltH,k,'mean');draw('saltMean',saltMean,saltW,saltH);setMetric('a',measure(saltOriginal,saltMean,saltW,saltH));}
+ let results=[];if(saltMedian)results.push(['Median',measure(saltOriginal,saltMedian,saltW,saltH)]);if(saltMean)results.push(['Mean',measure(saltOriginal,saltMean,saltW,saltH)]);
+ if(results.length){results.sort((a,b)=>a[1].mse-b[1].mse);let best=results[0][0]==='Median'?saltMedian:saltMean;draw('saltBest',best,saltW,saltH);$('saltAnalysis').textContent=`With a ${k}×${k} window, ${results[0][0]} has the lower MSE (${results[0][1].mse.toFixed(1)}) for this test. Median filtering often handles impulse noise well because isolated black/white extremes do not dominate the median. Mean filtering averages extremes and can blur edges. Check both the metrics and visual details.`;drawMetricChart(results);}
+}
+$('medianRun').onclick=()=>runSalt('median');$('meanRun').onclick=()=>runSalt('mean');$('bothRun').onclick=()=>runSalt('both');
+function drawHistogram(id,data,w,h){let c=$(id),ctx=c.getContext('2d'),W=c.width=c.clientWidth*2,H=c.height=c.clientHeight*2;ctx.clearRect(0,0,W,H);let bins=new Array(64).fill(0);for(let i=0;i<w*h;i++){let v=Math.round((data[i*4]*.299+data[i*4+1]*.587+data[i*4+2]*.114)/4);bins[Math.min(63,Math.floor(v/4))]++;}let max=Math.max(...bins,1);ctx.fillStyle='#7568e8';bins.forEach((v,i)=>{let bw=W/bins.length;let bh=(v/max)*(H-15);ctx.fillRect(i*bw,H-bh,bw-1,bh);});}
+function drawMetricChart(results){let c=$('metricChart'),ctx=c.getContext('2d'),W=c.width=c.clientWidth*2,H=c.height=c.clientHeight*2;ctx.clearRect(0,0,W,H);let vals=results.map(x=>x[1].mse),max=Math.max(...vals,1);results.forEach((x,i)=>{let bw=W/(results.length*2),xx=(i*2+0.6)*bw*1.0,bh=x[1].mse/max*(H-40);ctx.fillStyle=i?'#ff9b50':'#6657e8';ctx.fillRect(xx,H-bh-20,bw,bh);ctx.fillStyle='#53607a';ctx.font='22px Arial';ctx.fillText(x[0],xx,H-4);ctx.fillText(x[1].mse.toFixed(0),xx,H-bh-25);});}
+$('downloadSalt').onclick=()=>{let rows=[['Method','MSE','PSNR dB','SSIM'],['Noisy',...Object.values(measure(saltOriginal,saltNoisy||saltOriginal,saltW,saltH))]];if(saltMedian)rows.push(['Median',...Object.values(measure(saltOriginal,saltMedian,saltW,saltH))]);if(saltMean)rows.push(['Mean',...Object.values(measure(saltOriginal,saltMean,saltW,saltH))]);let csv=rows.map(r=>r.join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='salt-pepper-results.csv';a.click();URL.revokeObjectURL(a.href);};
+// MORPHOLOGY
+function makeMorph(type){let w=morphW,h=morphH,a=new Uint8Array(w*h);const disk=(cx,cy,r)=>{for(let y=0;y<h;y++)for(let x=0;x<w;x++)if((x-cx)**2+(y-cy)**2<r*r)a[y*w+x]=1;};if(type==='ring'){disk(160,105,75);for(let y=0;y<h;y++)for(let x=0;x<w;x++)if((x-160)**2+(y-105)**2<34*34)a[y*w+x]=0;}
+ if(type==='two'){disk(95,105,55);disk(235,105,48);for(let y=0;y<h;y++)for(let x=0;x<w;x++){if((x-95)**2+(y-105)**2<20*20||(x-235)**2+(y-105)**2<15*15)a[y*w+x]=0;}}
+ if(type==='bubble'){disk(160,105,75);for(let y=0;y<h;y++)for(let x=0;x<w;x++)if((x-160)**2+(y-105)**2<27*27)a[y*w+x]=0;for(let y=70;y<82;y++)for(let x=150;x<170;x++)a[y*w+x]=0;}
+ return a;}
+function binRGBA(bin,w,h){let a=new Uint8ClampedArray(w*h*4);for(let i=0;i<bin.length;i++){let v=bin[i]?30:255;a[i*4]=a[i*4+1]=a[i*4+2]=v;a[i*4+3]=255;}return a;}
+function showMorph(){if(!morphBinary)return;draw('morphOriginal',binRGBA(morphBinary,morphW,morphH),morphW,morphH);$('morphDimensions').textContent=`${morphW} × ${morphH}`;morphFilled=morphClosed=null;empty('morphFilled','Fill internal holes');empty('morphClosed','Apply closing');$('fgCount').textContent=morphBinary.reduce((s,v)=>s+v,0);$('filledCount').textContent='—';$('closedCount').textContent='—';$('morphAnalysis').textContent='Binary image loaded. Region filling finds background areas enclosed by the foreground boundary.';}
+function loadMorph(){morphW=320;morphH=210;morphBinary=makeMorph($('morphSample').value);showMorph();}
+$('loadMorph').onclick=loadMorph;$('morphSample').onchange=loadMorph;
+$('threshold').oninput=()=> $('thresholdVal').textContent=$('threshold').value;
+$('morphUpload').onchange=e=>{let f=e.target.files[0];if(!f)return;let im=new Image(),url=URL.createObjectURL(f);im.onload=()=>{let scale=Math.min(1,520/Math.max(im.width,im.height));morphW=Math.round(im.width*scale);morphH=Math.round(im.height*scale);let c=document.createElement('canvas');c.width=morphW;c.height=morphH;let ctx=c.getContext('2d');ctx.drawImage(im,0,0,morphW,morphH);let d=ctx.getImageData(0,0,morphW,morphH).data;morphBinary=new Uint8Array(morphW*morphH);for(let i=0;i<morphBinary.length;i++){let g=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];morphBinary[i]=g<+$('threshold').value?1:0;}showMorph();URL.revokeObjectURL(url);};im.src=url;};
+function fillRegions(bin,w,h){let seen=new Uint8Array(w*h),q=new Int32Array(w*h),head=0,tail=0;function add(i){if(!seen[i]&&!bin[i]){seen[i]=1;q[tail++]=i;}}for(let x=0;x<w;x++){add(x);add((h-1)*w+x);}for(let y=0;y<h;y++){add(y*w);add(y*w+w-1);}while(head<tail){let i=q[head++],x=i%w,y=(i/w)|0;if(x>0)add(i-1);if(x<w-1)add(i+1);if(y>0)add(i-w);if(y<h-1)add(i+w);}let out=bin.slice(),added=0;for(let i=0;i<out.length;i++)if(!out[i]&&!seen[i]){out[i]=1;added++;}return {out,added};}
+function morphOp(bin,w,h,k,op){let r=k>>1,out=new Uint8Array(w*h);for(let y=0;y<h;y++)for(let x=0;x<w;x++){let v=op==='dilate'?0:1;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){let xx=x+dx,yy=y+dy,b=(xx<0||yy<0||xx>=w||yy>=h)?0:bin[yy*w+xx];if(op==='dilate')v=Math.max(v,b);else v=Math.min(v,b);}out[y*w+x]=v;}return out;}
+$('fillHoles').onclick=()=>{if(!morphBinary)loadMorph();let r=fillRegions(morphBinary,morphW,morphH);morphFilled=r.out;draw('morphFilled',binRGBA(morphFilled,morphW,morphH),morphW,morphH);$('filledCount').textContent=r.added.toLocaleString();$('morphAnalysis').textContent=`Region filling added ${r.added.toLocaleString()} foreground pixels. It fills enclosed holes but preserves the external background. This is the expected operation for segmented objects with internal holes.`;};
+$('closingRun').onclick=()=>{if(!morphBinary)loadMorph();let k=+$('closeKernel').value,d=morphOp(morphBinary,morphW,morphH,k,'dilate'),out=morphOp(d,morphW,morphH,k,'erode');morphClosed=out;let count=0;for(let i=0;i<out.length;i++)if(out[i]&&!morphBinary[i])count++;draw('morphClosed',binRGBA(out,morphW,morphH),morphW,morphH);$('closedCount').textContent=count.toLocaleString();$('morphAnalysis').textContent=`Morphological closing with a ${k}×${k} structuring element added ${count.toLocaleString()} foreground pixels compared with the input. Closing seals small gaps and narrow holes; region filling is more reliable for completely enclosed internal holes.`;};
+$('resetMorph').onclick=loadMorph;
+// ROAD LANE MARKING DETECTION: connect the uploaded image to Flask API
+let laneSourceFile=null, laneResultUrl=null;
+function fileToDataURL(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});}
+function showLaneImage(id,dataUrl){const el=$(id);el.innerHTML='';const img=document.createElement('img');img.src=dataUrl;img.alt='Lane detection result';img.style.width='100%';img.style.height='auto';img.style.display='block';img.style.borderRadius='8px';el.appendChild(img);el.classList.remove('empty');}
+function resetLane(){laneSourceFile=null;laneResultUrl=null;$('laneUpload').value='';$('laneFileName').textContent='No image selected';$('laneProcess').disabled=true;$('laneDownload').disabled=true;$('laneStatus').textContent='Upload a road image to begin.';[['laneOriginal','Upload an image'],['laneHorizontal','Waiting for processing'],['laneVertical','Waiting for processing'],['laneDiagonal45','Waiting for processing'],['laneDiagonal135','Waiting for processing'],['laneCombined','Waiting for processing'],['laneOutput','Detected segments will appear here']].forEach(([id,msg])=>empty(id,msg));}
+$('laneUpload').onchange=()=>{const f=$('laneUpload').files[0];if(!f)return;if(!f.type.startsWith('image/')){$('laneStatus').textContent='Please select a valid image file.';return;}laneSourceFile=f;$('laneFileName').textContent=f.name;$('laneProcess').disabled=false;$('laneDownload').disabled=true;$('laneStatus').textContent='Image selected. Click Detect lane markings.';const url=URL.createObjectURL(f);showLaneImage('laneOriginal',url);};
+$('laneReset').onclick=resetLane;
+$('laneProcess').onclick=async()=>{if(!laneSourceFile)return;const btn=$('laneProcess');btn.disabled=true;btn.textContent='Processing...';$('laneStatus').textContent='Applying directional line detection masks...';try{const dataUrl=await fileToDataURL(laneSourceFile);const response=await fetch('/api/lane/detect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:dataUrl})});const data=await response.json();if(!response.ok||!data.success)throw new Error(data.error||'Lane detection failed.');const imgs=data.images;showLaneImage('laneOriginal',imgs.original);showLaneImage('laneHorizontal',imgs.horizontal);showLaneImage('laneVertical',imgs.vertical);showLaneImage('laneDiagonal45',imgs.diagonal_45);showLaneImage('laneDiagonal135',imgs.diagonal_135);showLaneImage('laneCombined',imgs.combined_mask);showLaneImage('laneOutput',imgs.output);laneResultUrl=imgs.output;$('laneDownload').disabled=false;$('laneStatus').textContent=data.message+' Red overlay shows detected line structures.';}catch(err){$('laneStatus').textContent='Error: '+err.message;}finally{btn.disabled=false;btn.textContent='Detect lane markings';}};
+$('laneDownload').onclick=()=>{if(!laneResultUrl)return;const a=document.createElement('a');a.href=laneResultUrl;a.download='road-lane-detection-result.png';document.body.appendChild(a);a.click();a.remove();};
+
+loadSaltSample();loadMorph();
+
+// HANDWRITTEN DIGIT RECOGNITION
+let digitFile=null;
+$('digitUpload').onchange=()=>{
+ const f=$('digitUpload').files[0];if(!f)return;
+ if(!f.type.startsWith('image/')){$('digitStatus').textContent='Please choose a PNG or JPEG image.';return;}
+ digitFile=f;$('digitFileName').textContent=f.name;$('digitRun').disabled=false;
+ $('digitStatus').textContent='Image selected. Click Recognize digit.';
+ showLaneImage('digitOriginal',URL.createObjectURL(f));
+};
+$('digitRun').onclick=async()=>{
+ if(!digitFile)return;const btn=$('digitRun');btn.disabled=true;btn.textContent='Analyzing...';
+ $('digitStatus').textContent='Normalizing image and extracting descriptors. First run may take a few seconds while models are trained.';
+ try{
+  const image=await fileToDataURL(digitFile);
+  const response=await fetch('/api/digit/recognize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image})});
+  const data=await response.json();if(!response.ok||!data.success)throw new Error(data.error||'Recognition failed.');
+  $('digitPrediction').textContent=data.digit;$('digitConfidence').textContent=data.confidence.toFixed(2)+'%';
+  showLaneImage('digitNormalized',data.processed_image);
+  $('digitPredictions').innerHTML=Object.entries(data.predictions).map(([name,v])=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)"><span>${name}</span><b>${v.digit} · ${v.confidence.toFixed(1)}%</b></div>`).join('');
+  $('digitMetrics').querySelector('tbody').innerHTML=Object.entries(data.metrics).map(([name,m])=>`<tr>${[name,m.accuracy+'%',m.precision+'%',m.recall+'%',m.f1+'%'].map(v=>`<td style="padding:10px;border-bottom:1px solid var(--line)">${v}</td>`).join('')}</tr>`).join('');
+  $('digitDatasetNote').textContent=data.dataset+' · '+data.method+'. Metrics use the held-out test partition.';
+  $('digitFeaturePreview').innerHTML=Object.entries(data.feature_values).map(([name,vals])=>`<div style="margin:8px 0"><b>${name}</b><div style="overflow-wrap:anywhere">${vals.join(', ')}</div></div>`).join('');
+  $('digitStatus').textContent='Recognition completed. Combined-feature prediction: '+data.digit+'.';
+ }catch(err){$('digitStatus').textContent='Error: '+err.message;}
+ finally{btn.disabled=false;btn.textContent='Recognize digit';}
+};
+$('digitReset').onclick=()=>{
+ digitFile=null;$('digitUpload').value='';$('digitFileName').textContent='No image selected';$('digitRun').disabled=true;
+ $('digitPrediction').textContent='—';$('digitConfidence').textContent='—';
+ ['digitOriginal','digitNormalized'].forEach(id=>empty(id,'No image uploaded'));
+ $('digitPredictions').textContent='Run recognition to compare predictions.';
+ $('digitFeaturePreview').textContent='Feature values will appear here after recognition.';
+ $('digitStatus').textContent='Upload one clear handwritten digit (0–9), preferably dark ink on a plain light background.';
+};
+
+// SETTINGS
+$('saveSettings').onclick=()=>{let theme=$('themeSelect').value;document.body.classList.toggle('dark',theme==='dark');if(theme==='dark'){document.documentElement.style.setProperty('--bg','#101729');document.documentElement.style.setProperty('--surface','#19243a');document.documentElement.style.setProperty('--surface2','#202d48');document.documentElement.style.setProperty('--ink','#edf2ff');document.documentElement.style.setProperty('--muted','#aab6d3');document.documentElement.style.setProperty('--line','#33415f');}else{['--bg','--surface','--surface2','--ink','--muted','--line'].forEach((v,i)=>document.documentElement.style.removeProperty(v));} $('noiseAmount').value=$('defaultNoise').value;$('noiseVal').textContent=$('noiseAmount').value+'%';$('kernel').value=$('defaultKernel').value;$('settingsStatus').textContent='Settings applied to this session.';};
+$('resetSettings').onclick=()=>{$('themeSelect').value='light';$('defaultNoise').value='8';$('defaultKernel').value='3';$('noiseAmount').value=8;$('noiseVal').textContent='8%';$('kernel').value=3;document.body.classList.remove('dark');['--bg','--surface','--surface2','--ink','--muted','--line'].forEach(v=>document.documentElement.style.removeProperty(v));$('settingsStatus').textContent='Defaults restored.';};
+</script></body></html>
